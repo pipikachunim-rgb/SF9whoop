@@ -5,7 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Whoop Japan Store - SF9 SPECIAL</title>
     <style>
-       /* 基礎樣式與文字顏色 */
+  /* 修正卡片寬度，讓電腦版可以平排 */
+        .product-card { 
+            background: white; 
+            width: calc(33.33% - 20px); /* 在電腦版佔約三分之一寬度 */
+            min-width: 280px; /* 確保在小螢幕時不會縮得太小 */
+            max-width: 320px; 
+            padding: 15px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            cursor: pointer; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+
+        /* 確保容器置中並允許換行 */
+        .store-grid { 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin-top: 10px; 
+        }
+
+        /* 保持剛才的噴砂灰色質感設定 */
         .status-bar { 
             color: #333; 
             padding: 8px; 
@@ -19,7 +41,6 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
         }
 
-        /* 模擬圖片中的噴砂顆粒感 (Grit Noise) */
         .status-bar::before {
             content: "";
             position: absolute;
@@ -33,17 +54,16 @@
             background-position: 0 0, 1px 1px;
         }
 
-        /* 1部 & 2部：還原噴砂灰色封面質感 (Grit Grey) */
         .bar-1, .bar-2 { 
             background: linear-gradient(135deg, #a8a8a8 0%, #d1d1d1 100%);
             border: 1px solid #8e8e8e;
         }
 
-        /* 3部：還原圖中較淺的灰白色感 (Light Grit) */
         .bar-3 { 
             background: linear-gradient(135deg, #d6d6d6 0%, #f0f0f0 100%);
             border: 1px solid #b8b8b8;
         }
+        
         
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; width: 90%; max-width: 450px; border-radius: 8px; position: relative; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
