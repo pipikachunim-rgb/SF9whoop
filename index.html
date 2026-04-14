@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Whoop Japan Store - P1Harmony UNIQUE</title>
+    <title>Whoop Japan Store - SF9 SPECIAL</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f4; margin: 0; padding: 15px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
         .store-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
@@ -22,9 +22,10 @@
 
         select, input, .action-btn { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; border-radius: 4px; }
         .action-btn { background: black; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .confirm-btn { background: #ccc; color: #333; margin: 0; }
+        .history-trigger-btn { background: #666; margin-top: 10px; }
 
         .price-display { text-align: right; font-weight: bold; color: #d30019; font-size: 18px; margin: 5px 0; }
+        .total-spent-display { text-align: center; font-size: 14px; color: #333; margin-top: 20px; padding: 10px; border-top: 1px dashed #ccc; }
         
         .section-title { font-size: 12px; color: #888; margin: 15px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
         .list-item { border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px; padding: 12px; display: flex; align-items: center; text-align: left; position: relative; }
@@ -40,21 +41,26 @@
 <body>
 
     <h2 style="text-align: center; color: #d30019; margin-bottom: 2px;">Whoop Japan Store</h2>
-    <div style="text-align: center; color: #666; font-size: 12px; margin-bottom: 10px;">P1Harmony 9th Mini Album [UNIQUE]</div>
+    <div style="text-align: center; color: #666; font-size: 12px; margin-bottom: 10px;">SF9 Special Album [About Love]</div>
     
     <div class="store-grid">
         <div class="product-card" onclick="openPurchase(1, 7200)">
             <div class="status-bar bar-1">1部 特典会 参加権付き</div>
-            <p style="font-size:13px;">P1Harmony UNIQUE 2枚セット<br><strong>¥7,200 (税込)</strong></p>
+            <p style="font-size:13px;">SF9 Special Album ‘About Love’ 2枚セット<br><strong>¥7,200 (税込)</strong></p>
         </div>
         <div class="product-card" onclick="openPurchase(2, 7200)">
             <div class="status-bar bar-2">2部 特典会 参加権付き</div>
-            <p style="font-size:13px;">P1Harmony UNIQUE 2枚セット<br><strong>¥7,200 (税込)</strong></p>
+            <p style="font-size:13px;">SF9 Special Album ‘About Love’ 2枚セット<br><strong>¥7,200 (税込)</strong></p>
         </div>
         <div class="product-card" onclick="openPurchase(3, 3600)">
-            <div class="status-bar bar-3">3部 特典会 抽選権付き</div>
-            <p style="font-size:13px;">P1Harmony UNIQUE 1枚<br><strong>¥3,600 (税込)</strong></p>
+            <div class="status-bar bar-3">3部 特典会 抽選權付き</div>
+            <p style="font-size:13px;">SF9 Special Album ‘About Love’ 1枚<br><strong>¥3,600 (税込)</strong></p>
         </div>
+    </div>
+
+    <div class="total-spent-display" id="total-spent-area">
+        総抽選金額: <span id="total-spent-amount">¥0</span>
+        <button class="action-btn history-trigger-btn" onclick="openHistoryOnly()">過去当選記録</button>
     </div>
 
     <div id="modal">
@@ -66,9 +72,8 @@
             <div class="modal-body">
                 <div id="purchase-selection-area">
                     <select id="date-select">
-                        <option value="5/29(金)東京">5/29(金)東京</option>
-                        <option value="5/30(土)東京">5/30(土)東京</option>
-                        <option value="5/31(日)大阪">5/31(日)大阪</option>
+                        <option value="2026/05/23(土)東京">2026年5月23日(土) 東京</option>
+                        <option value="2026/05/24(日)大阪">2026年5月24日(日) 大阪</option>
                     </select>
                     <input type="number" id="buy-count" value="1" min="1" max="100" oninput="updateTotalPrice()">
                     <div class="price-display" id="total-price-text">¥0</div>
@@ -77,127 +82,164 @@
                 </div>
 
                 <div id="result-display-area" style="display: none;">
-                    <div class="section-title">本次抽选结果</div>
+                    <div class="section-title">この選考の結果</div>
                     <div id="current-results-container"></div>
                     
-                    <div id="history-section" style="display: none;">
-                        <div class="section-title">历史中奖记录</div>
+                    <div id="history-section">
+                        <div class="section-title">過去当選記録</div>
                         <div id="history-container"></div>
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer" id="modal-footer-action" style="display: none;">
-                <button class="action-btn confirm-btn" onclick="closeModal()">确认</button>
+                <button class="action-btn" style="background:#ccc; color:#333;" onclick="closeModal()">閉じる</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let currentPart = 0, unitPrice = 0, historyWins = [];
-        const members = ["KEEHO", "THEO", "JIUNG", "INTAK", "SOUL", "JONGSEOB"];
-        const unitData = {
-            "5/29(金)東京": { A: "KEEHO・THEO", B: "JIUNG・INTAK", C: "SOUL・JONGSEOB" },
-            "5/30(土)東京": { A: "KEEHO ...", B: "JIUNG・SOUL", C: "THEO・JONGSEOB" },
-            "5/31(日)大阪": { A: "KEEHO・SOUL", B: "THEO・JIUNG", C: "INTAK・JONGSEOB" }
-        };
+<script>
+    let currentPart = 0, unitPrice = 0;
+    const members = ["YOUNG BIN", "IN SEONG", "JAE YOON", "DA WON", "HWI YOUNG", "CHA NI"];
+    const unitData = {
+        "2026/05/23(土)東京": { A: "IN SEONG・CHA NI", B: "YOUNG BIN・DA WON", C: "JAE YOON・HWI YOUNG" },
+        "2026/05/24(日)大阪": { A: "YOUNG BIN・CHA NI", B: "IN SEONG・DA WON", C: "JAE YOON・HWI YOUNG" }
+    };
+    const fullPrizePool = [
+        { name: "個別ハイタッチ会", weight: 50 },
+        { name: "個別フォトカードお渡し会", weight: 25 },
+        { name: "個別サイン会", weight: 15 },
+        { name: "個別写真撮影会", weight: 10 } 
+    ];
 
-        // 一二部奖池权重调整：提高合影概率
-        const fullPrizePool = [
-            { name: "個別ハイタッチ会", weight: 45 },
-            { name: "個別フォトカードお渡し会", weight: 20 },
-            { name: "個別サイン会", weight: 15 },
-            { name: "個別私物サイン会", weight: 10 },
-            { name: "個別写真撮影会", weight: 10 } // 权重从 5 调至 10
-        ];
+    // 初始化：檢查 2 小時內的快取資料
+    window.onload = function() {
+        cleanOldData();
+        updateDisplay();
+    };
 
-        function openPurchase(part, price) {
-            currentPart = part; unitPrice = price;
-            document.getElementById('modal-title').innerText = `${part}部 特典会購入`;
-            document.getElementById('buy-count').value = 1;
-            updateTotalPrice();
-            document.getElementById('purchase-selection-area').style.display = 'block';
-            document.getElementById('result-display-area').style.display = 'none';
-            document.getElementById('modal-footer-action').style.display = 'none';
-            document.getElementById('modal').style.display = 'flex';
+    function cleanOldData() {
+        const lastUpdate = localStorage.getItem('last_update');
+        const now = new Date().getTime();
+        // 如果超過 2 小時 (2 * 60 * 60 * 1000 毫秒)，清除數據
+        if (lastUpdate && (now - lastUpdate > 7200000)) {
+            localStorage.removeItem('history_wins');
+            localStorage.removeItem('total_spent');
         }
+    }
 
-        function updateTotalPrice() {
-            const count = document.getElementById('buy-count').value || 0;
-            document.getElementById('total-price-text').innerText = `¥${(count * unitPrice).toLocaleString()}`;
+    function updateDisplay() {
+        const total = localStorage.getItem('total_spent') || 0;
+        document.getElementById('total-spent-amount').innerText = `¥${parseInt(total).toLocaleString()}`;
+    }
+
+    function openPurchase(part, price) {
+        currentPart = part; unitPrice = price;
+        document.getElementById('modal-title').innerText = `${part}部 特典会購入`;
+        document.getElementById('buy-count').value = 1;
+        updateTotalPrice();
+        document.getElementById('purchase-selection-area').style.display = 'block';
+        document.getElementById('result-display-area').style.display = 'none';
+        document.getElementById('modal-footer-action').style.display = 'none';
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function openHistoryOnly() {
+        cleanOldData();
+        document.getElementById('modal-title').innerText = `過去当選記録`;
+        document.getElementById('purchase-selection-area').style.display = 'none';
+        document.getElementById('result-display-area').style.display = 'block';
+        document.getElementById('current-results-container').innerHTML = '';
+        renderHistory();
+        document.getElementById('modal-footer-action').style.display = 'block';
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function updateTotalPrice() {
+        const count = document.getElementById('buy-count').value || 0;
+        document.getElementById('total-price-text').innerText = `¥${(count * unitPrice).toLocaleString()}`;
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function getFullPoolPrize() {
+        const total = fullPrizePool.reduce((sum, p) => sum + p.weight, 0);
+        let r = Math.random() * total;
+        for (const p of fullPrizePool) {
+            if (r < p.weight) return p.name;
+            r -= p.weight;
         }
+        return fullPrizePool[0].name;
+    }
 
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    function confirmPurchase() {
+        const date = document.getElementById('date-select').value;
+        const count = parseInt(document.getElementById('buy-count').value) || 1;
+        let currentBatch = [];
+        let historyWins = JSON.parse(localStorage.getItem('history_wins') || "[]");
+        let totalSpent = parseInt(localStorage.getItem('total_spent') || "0");
 
-        function getFullPoolPrize() {
-            const total = fullPrizePool.reduce((sum, p) => sum + p.weight, 0);
-            let r = Math.random() * total;
-            for (const p of fullPrizePool) {
-                if (r < p.weight) return p.name;
-                r -= p.weight;
-            }
-            return fullPrizePool[0].name;
-        }
-
-        function confirmPurchase() {
-            const date = document.getElementById('date-select').value;
-            const count = parseInt(document.getElementById('buy-count').value) || 1;
-            let currentBatch = [];
-
-            for (let i = 0; i < count; i++) {
-                let entry = null;
-                if (currentPart < 3) {
-                    const prizeName = getFullPoolPrize();
-                    const m = members[Math.floor(Math.random() * members.length)];
-                    entry = { isWin: true, title: `${currentPart}部：${prizeName}`, detail: `メンバー：${m} / ${date}` };
+        for (let i = 0; i < count; i++) {
+            let entry = null;
+            if (currentPart < 3) {
+                const prizeName = getFullPoolPrize();
+                const m = members[Math.floor(Math.random() * members.length)];
+                entry = { isWin: true, title: `${currentPart}部：${prizeName}`, detail: `メンバー：${m} / ${date}` };
+                historyWins.push(entry);
+            } else {
+                if (Math.random() < 0.1) {
+                    const uk = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
+                    entry = { isWin: true, title: `3部：2:1 ユニット写真撮影会`, detail: `ユニット${uk}：${unitData[date][uk]} / ${date}` };
                     historyWins.push(entry);
                 } else {
-                    if (Math.random() < 0.1) {
-                        const uk = ['A', 'B', 'C'][Math.floor(Math.random() * 3)];
-                        entry = { isWin: true, title: `3部：2:1 ユニット写真撮影会`, detail: `ユニット${uk}：${unitData[date][uk]} / ${date}` };
-                        historyWins.push(entry);
-                    } else {
-                        entry = { isWin: false, title: `3部：2:1 ユニット写真撮影会`, detail: `落選 / ${date}` };
-                    }
+                    entry = { isWin: false, title: `3部：2:1 ユニット写真撮影會`, detail: `落選 / ${date}` };
                 }
-                currentBatch.push(entry);
             }
-
-            renderResults(currentBatch);
-            document.getElementById('purchase-selection-area').style.display = 'none';
-            document.getElementById('result-display-area').style.display = 'block';
-            document.getElementById('modal-footer-action').style.display = 'block';
+            currentBatch.push(entry);
         }
 
-        function renderResults(currentBatch) {
-            const currentContainer = document.getElementById('current-results-container');
-            const historyContainer = document.getElementById('history-container');
-            const historySection = document.getElementById('history-section');
+        // 儲存資料
+        totalSpent += (count * unitPrice);
+        localStorage.setItem('history_wins', JSON.stringify(historyWins));
+        localStorage.setItem('total_spent', totalSpent);
+        localStorage.setItem('last_update', new Date().getTime());
 
-            currentContainer.innerHTML = currentBatch.map(item => createItemHTML(item)).join('');
+        // 更新 UI
+        renderResults(currentBatch, historyWins);
+        updateDisplay();
+        document.getElementById('purchase-selection-area').style.display = 'none';
+        document.getElementById('result-display-area').style.display = 'block';
+        document.getElementById('modal-footer-action').style.display = 'block';
+    }
 
-            const oldWins = historyWins.filter(h => !currentBatch.includes(h)).reverse();
-            if (oldWins.length > 0) {
-                historySection.style.display = 'block';
-                historyContainer.innerHTML = oldWins.map(item => createItemHTML(item)).join('');
-            } else {
-                historySection.style.display = 'none';
-            }
+    function renderResults(currentBatch, historyWins) {
+        document.getElementById('current-results-container').innerHTML = currentBatch.map(item => createItemHTML(item)).join('');
+        renderHistory();
+    }
+
+    function renderHistory() {
+        let historyWins = JSON.parse(localStorage.getItem('history_wins') || "[]");
+        const container = document.getElementById('history-container');
+        if (historyWins.length > 0) {
+            container.innerHTML = [...historyWins].reverse().map(item => createItemHTML(item)).join('');
+        } else {
+            container.innerHTML = '<div style="font-size:12px; color:#999; text-align:center; padding:20px;">記録がありません</div>';
         }
+    }
 
-        function createItemHTML(item) {
-            return `
-                <div class="list-item ${item.isWin ? 'win-item' : 'lose-item'}">
-                    <div class="check-icon"></div>
-                    <div>
-                        <span class="${item.isWin ? 'badge-unused' : 'badge-lose'}">${item.isWin ? '未使用' : '落選'}</span>
-                        <div style="font-size:13px; font-weight:bold; margin-top:3px; color:black;">${item.isWin ? '当選：' : ''}${item.title}</div>
-                        <div style="font-size:11px; color: #666;">${item.detail}</div>
-                    </div>
-                    <div class="arrow-right">＞</div>
+    function createItemHTML(item) {
+        return `
+            <div class="list-item ${item.isWin ? 'win-item' : 'lose-item'}">
+                <div class="check-icon"></div>
+                <div>
+                    <span class="${item.isWin ? 'badge-unused' : 'badge-lose'}">${item.isWin ? '未使用' : '落選'}</span>
+                    <div style="font-size:13px; font-weight:bold; margin-top:3px; color:black;">${item.isWin ? '当選：' : ''}${item.title}</div>
+                    <div style="font-size:11px; color: #666;">${item.detail}</div>
                 </div>
-            `;
-        }
-    </script>
+                <div class="arrow-right">＞</div>
+            </div>
+        `;
+    }
+</script>
 </body>
 </html>
